@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Generate Barcode</title>
+    <!-- Include JsBarcode library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+    <h1>Generate Barcode</h1>
+    
+    <!-- Elemen SVG untuk menampilkan barcode -->
+    <svg id="barcode"></svg>
+    
+    <script>
+        // Fungsi untuk menghasilkan barcode
+        function generateBarcode(number) {
+            var svg = document.getElementById("barcode");
+            
+            // Menghasilkan barcode dengan format CODE128
+            JsBarcode(svg, number.toString(), {
+                format: "CODE128", // Format barcode (bisa diganti dengan format lain)
+                width: 2, // Lebar garis barcode
+                height: 60, // Tinggi barcode
+                displayValue: true // Menampilkan nilai teks di sebelah barcode
+            });
+        }
+
+        var currentNumber = 1;
+
+        // Menghasilkan barcode awal
+        generateBarcode(currentNumber);
+
+        // Fungsi untuk mengubah dan menghasilkan barcode selanjutnya setiap 5 detik
+        function changeBarcode() {
+            setInterval(function () {
+                currentNumber++;
+                if (currentNumber > 20) {
+                    currentNumber = 1; // Kembali ke angka awal jika mencapai 20
+                }
+                generateBarcode(currentNumber);
+            }, 5000); // Mengganti setiap 5 detik
+        }
+
+        // Panggil fungsi untuk mengubah barcode
+        changeBarcode();
+    </script>
+</body>
+</html>

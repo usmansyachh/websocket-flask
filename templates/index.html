@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.0/dist/JsBarcode.all.min.js"></script>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            
+            body {
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            form {
+                border: 3px solid #f1f1f1;
+            }
+
+            input[type=password],
+            input[type=text] {
+                width: 100%;
+                padding: 12px 20px;
+                margin: 8px 0;
+                display: inline-block;
+                border: 1px solid #ccc;
+                box-sizing: border-box;
+            }
+
+            button {
+                background-color: #04AA6D;
+                color: white;
+                padding: 14px 20px;
+                margin: 8px 0;
+                border: none;
+                cursor: pointer;
+                width: 100%;
+            }
+
+            button:hover {
+                opacity: 0.8;
+            }
+
+            .imgcontainer {
+                text-align: center;
+                margin: 24px 0 12px;
+            }
+
+            img.avatar {
+                width: 40%;
+                border-radius: 50%;
+            }
+
+            .container {
+                padding: 16px;
+            }
+
+            .barcodeku {
+                margin-left: -10px;
+            }
+
+            span.psw {
+                float: right;
+                padding-top: 16px;
+            }
+
+            /* Change styles for span and cancel button on extra small screens */
+            @media screen and (max-width: 300px) {
+                span.psw {
+                    display: block;
+                    float: none;
+                }
+                .cancelbtn {
+                    width: 100%;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <h2>Login Form</h2>
+
+        <form action="/action_page.php" method="post">
+            <div class="imgcontainer">
+                <img src="" alt="Avatar" class="avatar">
+            </div>
+
+            <div class="container">
+                <label for="uname">
+                    <b>Username</b>
+                </label>
+                <input
+                    type="text"
+                    id="message"
+                    placeholder="Enter Username"
+                    name="uname"
+                    required="required">
+                
+                <svg class="barcodeku" id="barcode"></svg>
+
+                <button onclick="sendMessage()">Send</button>
+                <button onclick="hapusPesanTerakhir()">Hapus Websocket List</button>
+
+                <label>
+                    <b>WEB SOCKET LIST :</b>
+                </label>
+                <ul id="message-list"></ul>
+            </div>
+        </div>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function () {
+            console.log('Connected to server');
+        });
+
+        socket.on('message', function (data) {
+            console.log('Received message: ' + data);
+            appendMessage(data);
+        });
+
+        function sendMessage() {
+            var messageInput = document.getElementById('message');
+            var message = messageInput.value;
+            socket.send(message);
+            messageInput.value = '';
+        }
+
+        function appendMessage(message) {
+            var messageList = document.getElementById('message-list');
+            var li = document.createElement('li');
+            li.textContent = message;
+            messageList.appendChild(li);
+        }
+
+        // Fungsi untuk menghapus pesan terakhir
+        function hapusPesanTerakhir() {
+            // Kirim event 'hapus_pesan_terakhir' ke server
+            socket.emit('hapus_pesan_terakhir');
+        }
+
+        // Mendengarkan perintah dari server untuk memperbarui daftar pesan
+        socket.on('update_pesan_list', function () {
+            updateMessageList(); // Panggil fungsi yang memperbarui tampilan daftar pesan
+        });
+
+        // Fungsi untuk memperbarui tampilan daftar pesan di HTML
+        function updateMessageList() {
+            var messageList = document.getElementById('message-list');
+            messageList.innerHTML = ''; // Kosongkan daftar pesan
+
+            for (var i = 0; i < pesan_dikirim.length; i++) {
+                var li = document.createElement('li');
+                li.textContent = pesan_dikirim[i];
+                messageList.appendChild(li);
+            }
+        }
+
+         // Fungsi untuk menghasilkan barcode
+         function generateBarcode(number) {
+            var svg = document.getElementById("barcode");
+            
+            // Menghasilkan barcode dengan format CODE128
+            JsBarcode(svg, number.toString(), {
+                format: "CODE128", // Format barcode (bisa diganti dengan format lain)
+                width: 3, // Lebar garis barcode
+                height: 50, // Tinggi barcode
+                displayValue: true // Menampilkan nilai teks di sebelah barcode
+            });
+        }
+
+        var currentNumber = 1;
+
+        // Menghasilkan barcode awal
+        generateBarcode(currentNumber);
+
+        // Fungsi untuk mengubah dan menghasilkan barcode selanjutnya setiap 5 detik
+        function changeBarcode() {
+            setInterval(function () {
+                currentNumber++;
+                if (currentNumber > 20) {
+                    currentNumber = 1; // Kembali ke angka awal jika mencapai 20
+                }
+                generateBarcode(currentNumber);
+            }, 5000); // Mengganti setiap 5 detik
+        }
+
+        // Panggil fungsi untuk mengubah barcode
+        changeBarcode();
+    </script>
+
+</body>
+</html>
